@@ -247,6 +247,13 @@ public class ModelNameCardControllor extends Controller {
      */
     public void Reports(){
         String openid = getSessionAttr("openid");
+        String officialsSql = Db.getSql("official.SelectAll");
+        List<Record> officials = Db.find(officialsSql,openid);
+        renderJson(officials);
+
+    }
+
+    public void WReports(){
 
     }
 

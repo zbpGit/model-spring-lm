@@ -22,11 +22,17 @@ import java.util.TreeMap;
 @Before(value = {ErrorInterceptor.class,Tx.class})
 public class PictureControllor extends Controller {
 
+    /**
+     * 获取系统时间
+     */
     public void Date(){
         String ddate = (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(Calendar.getInstance().getTime());
         renderJson(ddate);
     }
 
+    /**
+     * JsSDK
+     */
     public void JsSdk(){
         TreeMap map = new TreeMap();
         try {
@@ -53,6 +59,9 @@ public class PictureControllor extends Controller {
         }
     }
 
+    /**
+     * 获取模卡图片
+     */
     public void mookeType(){
         Integer type = Integer.valueOf(getPara("type"));
         String openid = getSessionAttr("openid");

@@ -2,9 +2,11 @@ package com.model.controller;
 
 import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
+import com.jfinal.kit.Kv;
 import com.jfinal.plugin.activerecord.Db;
 import com.jfinal.plugin.activerecord.Page;
 import com.jfinal.plugin.activerecord.Record;
+import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.jfinal.plugin.ehcache.CacheInterceptor;
 import com.jfinal.plugin.ehcache.CacheName;
@@ -21,6 +23,8 @@ import java.util.TreeMap;
 @Before(value = {ErrorInterceptor.class,Tx.class})
 public class AnnunciateControllor extends Controller {
 
+
+
     /**
      * Banner标题
      */
@@ -33,10 +37,15 @@ public class AnnunciateControllor extends Controller {
         renderJson(Banner);
     }
 
+    public void index(){
+        renderJson(123);
+    }
+
     /**
      * 服务类型
      */
     public void serve() {
+        getResponse().addHeader("Access-Control-Allow-Origin", "*");
         Integer type = Integer.valueOf(getPara("type"));
         String serve = Db.getSql("serve.serve");
         List<Record> Serve = Db.find(serve, type);
@@ -59,12 +68,12 @@ public class AnnunciateControllor extends Controller {
                     Record model_an = new Record();
                     model_an.set("mid", openId).set("aid", vid);
                     Db.save("model_an", model_an);
-                    renderJson("{\"result\":\"收藏成功\"}");
+                    renderJson("{\"result\":\"已收藏\"}");
                 } else {
                     Record model_an = new Record();
                     model_an.set("id", record.get("id"));
                     Db.delete("model_an", model_an);
-                    renderJson("{\"result\":\"取消收藏\"}");
+                    renderJson("{\"result\":\"未收藏\"}");
                 }
             } catch (Exception e) {
                 throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
@@ -74,31 +83,37 @@ public class AnnunciateControllor extends Controller {
         }
     }
 
-
+    /**
+     * 通告首页
+     */
     public void annunciate() {
-        Integer page = getParaToInt("page");
-        String address = getPara("address");
-        String type = getPara("type");
-        String sort = getPara("sort");
-        String pageSql = Db.getSql("annunciate.PageSelect");
-        String Sqlpage = Db.getSql("annunciate.SelectPage");
-        Page<Record> recordPage = Db.paginate(page,10,pageSql,Sqlpage);
-        renderJson(recordPage);
-    }
-
-    public void junit(){
-        /*String address = getPara("address");
-        String type = getPara("type");
-        String sort = getPara("sort");*/
-        String address = "";
-        String type = "";
-        String sort = "456";
-        Map<String,Object> map = new TreeMap<String, Object>();
-        map.put("address",address);
-        map.put("type",type);
-        map.put("sort",sort);
-        String url = SQLUtils.DynamicSQL(map);
-        renderText(url);
+        Integer page = getParaToInt("page");//起始页数
+        String address = getPara("address");//地区
+        String type = getPara("type");//类型
+        String sort = getPara("sort");//排序
+        if (address.equals("全国")){
+            Kv kv = Kv.by("type",type).set("sort",sort);
+            SqlPara sqlPara = Db.getSqlPara("annunciate.SelectAll",kv);
+            Page<Record> recordPage = Db.paginate(page,10,sqlPara);
+            renderJson(recordPage);
+        }else {
+            Map map = new TreeMap();
+            if (page == 1){
+                Kv officialN = Kv.by("official","非官方").set("top",1).set("address","%"+address+"%").set("type",type).set("sort",sort);
+                SqlPara Sqlpage = Db.getSqlPara("annunciate.SelectPage",officialN);
+                List<Record> officialNList = Db.find(Sqlpage);
+                map.put("stickAnnunciate",officialNList);
+                Kv officialY = Kv.by("official","官方").set("top",1).set("address","%"+address+"%").set("type",type).set("sort",sort);
+                SqlPara para = Db.getSqlPara("annunciate.SelectPage",officialY);
+                List<Record> officialYList = Db.find(para);
+                map.put("official",officialYList);
+            }
+            Kv kv = Kv.by("official","非官方").set("top",0).set("address","%"+address+"%").set("type",type).set("sort",sort);
+            SqlPara Sqlpage = Db.getSqlPara("annunciate.SelectPage",kv);
+            Page<Record> recordPage = Db.paginate(page,10,Sqlpage);
+            map.put("page",recordPage);
+            renderJson(map);
+        }
     }
 
     /**
@@ -153,14 +168,14 @@ public class AnnunciateControllor extends Controller {
             String SelectInform = Db.getSql("Reports.SelectInform");
             List<Record> reports = Db.find(SelectInform,openId, vid);
             if(model_a == null) {
-                map.put("model_an", "1");
+                map.put("model_an", "未收藏");
             } else {
-                map.put("model_an", "0");
+                map.put("model_an", "已收藏");
             }
             if(reports.size() != 0 && reports != null) {
-                map.put("reports", "0");
+                map.put("reports", "已举报");
             } else {
-                map.put("reports", "1");
+                map.put("reports", "未举报");
             }
             renderJson(map);
         } catch (Exception e) {
@@ -295,6 +310,7 @@ public class AnnunciateControllor extends Controller {
         List<Record> records = Db.find(annunciatetype);
         renderJson(records);
     }
+
 
 
 

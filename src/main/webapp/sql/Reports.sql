@@ -1,3 +1,3 @@
 #sql("SelectInform")
-  SELECT id FROM Reports WHERE nickname = ? and vid = ?
+  SELECT id FROM reports WHERE nickname = ? and vid = ?
 #end

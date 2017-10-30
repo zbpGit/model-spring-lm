@@ -1,6 +1,15 @@
 #sql("SelectAll")
   select * from annunciate as a,annunciatetype as b
    where a.work_type = b.antype AND audit = 1 AND remove = '0'
+   #if(type??)
+    and work_type = #para(type)
+  #end
+  #if(sort == "deadline")
+  order by deadline DESC
+  #end
+  #if(sort == "number")
+  order by number DESC
+  #end
 #end
 
 #sql("UpdateHit")
@@ -11,12 +20,27 @@
   select a.*,b.name,b.hurl from annunciate as a,model as b where a.uid = b.nickname and a.vid = ?
 #end
 
-#sql("PageSelect")
-  select *
+#sql("SelectPage")
+  select * from annunciate where official = #para(official) and top = #para(top)
+  #if(address??)
+    and site like #para(address)
+  #end
+  #if(type??)
+    and work_type = #para(type)
+  #end
+  #if(sort == "deadline")
+  order by deadline DESC
+  #end
+  #if(sort == "number")
+  order by number DESC
+  #end
 #end
 
-#sql("SelectPage")
-  from annunciate
+#sql("list")
+  select * from annunciate where 1 = 1
+  #if(work_type??)
+    and work_type = #para(work_type)
+  #end
 #end
 
 #sql("SelectAnnunciate")

@@ -69,7 +69,7 @@ public class MyBlog extends JFinalConfig{
     }
 
     public static void main(String[] args) {
-        JFinal.start("model-spring-lm/src/main/webapp",8080,"/");
+        JFinal.start("model-spring-lm/src/main/webapp",80,"/");
     }
 
 }

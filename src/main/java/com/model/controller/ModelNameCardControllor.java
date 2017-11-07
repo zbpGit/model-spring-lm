@@ -8,6 +8,7 @@ import com.jfinal.plugin.activerecord.tx.Tx;
 import com.model.interceptors.ErrorInterceptor;
 import com.model.util.*;
 import com.sun.org.apache.regexp.internal.RE;
+import org.apache.log4j.Logger;
 
 import java.awt.dnd.DnDConstants;
 import java.io.*;
@@ -19,9 +20,7 @@ import java.util.*;
 @Before(value = {ErrorInterceptor.class,Tx.class})
 public class ModelNameCardControllor extends Controller {
 
-    public void index(){
-        renderText("123");
-    }
+    private static Logger logger = Logger.getLogger(ModelNameCardControllor.class);
 
     /**
      * 个人信息
@@ -54,7 +53,7 @@ public class ModelNameCardControllor extends Controller {
         Map map = new TreeMap();
         map.put("system",official.get("ct"));
         map.put("like",like02.get("ct"));
-        map.put("news02",news02.get("ct"));
+        map.put("leave",news02.get("ct"));
         renderJson(map);
     }
 
@@ -79,6 +78,32 @@ public class ModelNameCardControllor extends Controller {
                 }
             }
             renderJson(oneself);
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
+    }
+
+    /**
+     * 删除我的收藏的通告或者名片
+     */
+    public void DelectCollect(){
+        try {
+            String id = getPara("vid");
+            String type = getPara("type");
+            String openid = getSessionAttr("openid");
+            String[] D = id.split(",");
+            if (type.equals("notify")){
+                for (int i = 0; i<D.length;i++){
+                    String DMa = Db.getSql("model_an.MDA");
+                    Db.update(DMa,openid,Integer.valueOf(D[i]));
+                }
+            }else if (type.equals("card")){
+                for (int i = 0; i<D.length;i++){
+                    String DMM = Db.getSql("model_mo.DMM");
+                    Db.update(DMM,openid,Integer.valueOf(D[i]));
+                }
+            }
+            renderJson("{\"result\":\"success\"}");
         }catch (Exception e){
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
@@ -253,11 +278,123 @@ public class ModelNameCardControllor extends Controller {
 
     }
 
-    public void WReports(){
+    public void WReports() throws UnsupportedEncodingException {
+        Integer id = getParaToInt("id");
+        String openid = getSessionAttr("openid");
+        List<Record> records = new ArrayList<Record>();
+        switch (id){
+            case 1 :
+                    String all = Db.getSql("official.SelectAll");
+                    records = Db.find(all,openid);
+                break;
+            case 2 :
+                    String SelectEM = Db.getSql("enjoy.SelectEM");
+                    records = Db.find(SelectEM,1,openid);
+                    for (int i = 0;i < records.size();i++){
+                        records.get(i).set("name", EmojiUtil.emojiRecovery2((String) records.get(i).get("name")));
+                    }
+                break;
+            case 3:
+                    String SelectEM02 = Db.getSql("enjoy.SelectEM");
+                    records = Db.find(SelectEM02,2,openid);
+                    for (int i = 0;i < records.size();i++){
+                        records.get(i).set("name", EmojiUtil.emojiRecovery2((String) records.get(i).get("name")));
+                     }
+                break;
+        }
+        renderJson(records);
+    }
+
+    /**
+     * 系统详情
+     */
+    public void Details(){
+        logger.info("系统详情");
+        try {
+            Integer id = getParaToInt("id");
+            Record  record = Db.findById("official",id);
+            String Updatelook = Db.getSql("official.Updatelook");
+            Db.update(Updatelook,id);
+            renderJson(record);
+        }catch (Exception e){
+            logger.error("错误",e.fillInStackTrace());
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
 
     }
 
-    
+    /**
+     * 系统信息详情
+     * @throws UnsupportedEncodingException
+     */
+    public void WDetails() throws UnsupportedEncodingException {
+        try {
+        Integer id = getParaToInt("id");
+        Integer type = getParaToInt("type");
+        Record record = new Record();
+        switch (type){
+            case 1 :
+                record = Db.findById("official",id);
+                String Updatelook = Db.getSql("official.Updatelook");
+                Db.update(Updatelook,id);
+                break;
+            default :
+                String SelectGuestbook = Db.getSql("enjoy.SelectGuestbook");
+                record = Db.findFirst(SelectGuestbook,1,id);
+                record.set("name",EmojiUtil.emojiRecovery2((String) record.get("name")));
+        }
+        renderJson(record);
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
+    }
+
+    public void DeleteReports(){
+        String id = getPara("id");
+        try {
+            String[] officialid = id.split(",");
+            for(int i = 0; i < officialid.length; ++i) {
+                Record record = new Record();
+                record.set("id",officialid[i]).set("identification","1").set("look","1");
+                Db.update("official",record);
+            }
+            renderJson("{\"result\":\"success\"}");
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
+    }
+
+    /**
+     * 删除信息
+     */
+    public void WDeleteReports(){
+        try {
+            String id = getPara("id");
+            Integer type = getParaToInt("type");
+            switch (type){
+                case 1 :
+                    String[] officialid = id.split(",");
+                    for(int i = 0; i < officialid.length; ++i) {
+                        Record record = new Record();
+                        record.set("id",officialid[i]).set("identification","1").set("look","1");
+                        Db.update("official",record);
+                    }
+                    break;
+                default:
+                    String[] enjoy = id.split(",");
+                    for(int i = 0; i < enjoy.length; ++i) {
+                        Record record = new Record();
+                        record.set("id",enjoy[i]).set("identifying",1).set("look",1);
+                        Db.update("enjoy",record);
+                    }
+            }
+            renderJson("{\"result\":\"success\"}");
+        }catch (Exception e){
+        throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
+    }
+
+
     public void File(){
         try {
             File file = new File("/home/tomcat/apache-tomcat-8.0.43/webapps/model-spring-lm/img/index/banner1.jpg");

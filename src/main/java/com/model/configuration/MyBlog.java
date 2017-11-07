@@ -47,7 +47,7 @@ public class MyBlog extends JFinalConfig{
         ActiveRecordPlugin arp = new ActiveRecordPlugin(druidPlugin);
         /*sql的起始文件夹*/
         arp.setBaseSqlTemplatePath(PathKit.getWebRootPath());
-        arp.addSqlTemplate("/sql/model.sql");
+        arp.addSqlTemplate("/WEB-INF/sql/model.sql");
         arp.setShowSql(true);
         arp.setDevMode(true);
         plugins.add(arp);

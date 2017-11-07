@@ -2,6 +2,7 @@ package com.model.util;
 
 
 import net.sf.json.JSONArray;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,4 +43,18 @@ public class JSONUtil {
 
         return address;
     }
+
+    public static String Cutout(String arealist) {
+        String[] arr = arealist.split(" ");
+        return arr[1];
+    }
+
+    public static String judge(String judge){
+        if (judge.equals("")){
+            return null;
+        }else {
+            return "%"+judge+"%";
+        }
+    }
+
 }

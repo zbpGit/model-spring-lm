@@ -15,5 +15,6 @@ public class FontRoutes extends Routes {
         add("/Detail", DetailControllor.class);
         add("/Picture", PictureControllor.class);
         add("/Model",ModelNameCardControllor.class);
+        add("/Work",WorkControllor.class);
     }
 }

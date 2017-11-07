@@ -1,5 +1,5 @@
 #sql("serve")
-  select * from serve where type = ?
+  select se_id,se_name,money,time from serve where type = ? LIMIT 3
 #end
 
 #sql("SelectTime")

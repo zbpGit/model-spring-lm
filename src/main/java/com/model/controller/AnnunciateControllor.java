@@ -37,16 +37,11 @@ public class AnnunciateControllor extends Controller {
         renderJson(Banner);
     }
 
-    public void index(){
-        renderJson(123);
-    }
-
     /**
      * 服务类型
      */
     public void serve() {
-        getResponse().addHeader("Access-Control-Allow-Origin", "*");
-        Integer type = Integer.valueOf(getPara("type"));
+        String type = getPara("type");
         String serve = Db.getSql("serve.serve");
         List<Record> Serve = Db.find(serve, type);
         renderJson(Serve);
@@ -91,19 +86,20 @@ public class AnnunciateControllor extends Controller {
         String address = getPara("address");//地区
         String type = getPara("type");//类型
         String sort = getPara("sort");//排序
-        if (address.equals("全国")){
+        Map map = new TreeMap();
+        if (address.equals("")){
             Kv kv = Kv.by("type",type).set("sort",sort);
             SqlPara sqlPara = Db.getSqlPara("annunciate.SelectAll",kv);
             Page<Record> recordPage = Db.paginate(page,10,sqlPara);
-            renderJson(recordPage);
+
+            renderJson(map);
         }else {
-            Map map = new TreeMap();
             if (page == 1){
-                Kv officialN = Kv.by("official","非官方").set("top",1).set("address","%"+address+"%").set("type",type).set("sort",sort);
+                Kv officialN = Kv.by("official","非官方").set("top",1).set("address",JSONUtil.judge(address)).set("type",type).set("sort",sort);
                 SqlPara Sqlpage = Db.getSqlPara("annunciate.SelectPage",officialN);
                 List<Record> officialNList = Db.find(Sqlpage);
                 map.put("stickAnnunciate",officialNList);
-                Kv officialY = Kv.by("official","官方").set("top",1).set("address","%"+address+"%").set("type",type).set("sort",sort);
+                Kv officialY = Kv.by("official","官方").set("top",1).set("address",JSONUtil.judge(address)).set("type",type).set("sort",sort);
                 SqlPara para = Db.getSqlPara("annunciate.SelectPage",officialY);
                 List<Record> officialYList = Db.find(para);
                 map.put("official",officialYList);
@@ -205,9 +201,9 @@ public class AnnunciateControllor extends Controller {
                 System.out.println(annunciate);
                 Db.save("annunciate",annunciate);
             } else if(!serverId.equals("")) {
+                Db.save("annunciate",annunciate);
                 String role = Db.getSql("overall.access_token");
                 Record overa = Db.findFirst(role,"access_token");
-                Db.save("annunciate",annunciate);
                 String[] chrstr = serverId.split(",");
                 for(int j = 0; j < chrstr.length; ++j) {
                     String file = DloadImgUtil.downloadMedia((String) overa.get("price"), chrstr[j], path, "/model-spring-lm/Files/User/");

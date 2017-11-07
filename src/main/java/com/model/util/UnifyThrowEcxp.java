@@ -2,6 +2,8 @@ package com.model.util;
 
 import com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +18,7 @@ public class UnifyThrowEcxp {
         Gson gson = new Gson();
         Map<String, String> map = new HashMap<String, String>();
         map.put("result","error");
+        map.put("Date", String.valueOf(new Date()));
         map.put("type", e.toString());
         map.put("message", e.getMessage());
         return gson.toJson(map);

@@ -10,6 +10,10 @@
   #include("model_an.sql")
 #end
 
+#namespace("model_mo")
+  #include("model_mo.sql")
+#end
+
 #namespace("annunciate")
   #include("annunciate.sql")
 #end

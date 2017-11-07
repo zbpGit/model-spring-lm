@@ -5,3 +5,7 @@
 #sql("SelectAll")
   SELECT  * from official WHERE nickname = ? and identification = '0' order by `timestamp` DESC
 #end
+
+#sql("Updatelook")
+  UPDATE official set  look = '1' where id = ?
+#end

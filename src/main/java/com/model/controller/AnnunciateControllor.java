@@ -91,15 +91,14 @@ public class AnnunciateControllor extends Controller {
             Kv kv = Kv.by("type",type).set("sort",sort);
             SqlPara sqlPara = Db.getSqlPara("annunciate.SelectAll",kv);
             Page<Record> recordPage = Db.paginate(page,10,sqlPara);
-
-            renderJson(map);
+            renderJson(recordPage);
         }else {
             if (page == 1){
                 Kv officialN = Kv.by("official","非官方").set("top",1).set("address",JSONUtil.judge(address)).set("type",type).set("sort",sort);
                 SqlPara Sqlpage = Db.getSqlPara("annunciate.SelectPage",officialN);
                 List<Record> officialNList = Db.find(Sqlpage);
                 map.put("stickAnnunciate",officialNList);
-                Kv officialY = Kv.by("official","官方").set("top",1).set("address",JSONUtil.judge(address)).set("type",type).set("sort",sort);
+                Kv officialY = Kv.by("official","官方").set("top",0).set("address",JSONUtil.judge(address)).set("type",type).set("sort",sort);
                 SqlPara para = Db.getSqlPara("annunciate.SelectPage",officialY);
                 List<Record> officialYList = Db.find(para);
                 map.put("official",officialYList);

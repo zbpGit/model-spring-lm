@@ -16,6 +16,8 @@ public class AsynchronousControllor extends Controller {
     public void index(){
         setSessionAttr("id","128");
         setSessionAttr("openid","o2u1CxORtqS6tQ7uWy27VvpKFMTQ");
+        System.out.println(getSessionAttr("id"));
+        System.out.println(getSessionAttr("openid"));
         String url = getPara("Url");
         redirect(url);
     }

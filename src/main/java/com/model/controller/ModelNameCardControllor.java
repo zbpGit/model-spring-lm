@@ -1,5 +1,6 @@
 package com.model.controller;
 
+import com.alibaba.druid.sql.dialect.db2.visitor.DB2ASTVisitor;
 import com.jfinal.aop.Before;
 import com.jfinal.core.Controller;
 import com.jfinal.plugin.activerecord.Db;
@@ -48,12 +49,29 @@ public class ModelNameCardControllor extends Controller {
         Record official = Db.findFirst(count,openid);
         String like =Db.getSql("enjoy.SelectCount");
         Record like02 = Db.findFirst(like,1,openid);
-        String news =Db.getSql("enjoy.SelectCount");
-        Record news02 = Db.findFirst(news,2,openid);
+        String senderAll = Db.getSql("conversation.senderAll");
+        List<Record> conversation = Db.find(senderAll,openid);
+        String recipientAll = Db.getSql("conversation.recipientAll");
+        List<Record> conversations= Db.find(recipientAll,openid);
+        List<Record> all = new ArrayList<>();
+        if (conversation!=null){
+            for (int i= 0;i<conversation.size();i++){
+                String userAll = Db.getSql("dialogue.userAll");
+                List<Record> dialogue = Db.find(userAll,conversation.get(i).get("id"),conversation.get(i).get("recipient"));
+                all.addAll(dialogue);
+            }
+        }
+        if (conversations!=null){
+            for (int i= 0;i<conversations.size();i++){
+                String userAll = Db.getSql("dialogue.userAll");
+                List<Record> dialogue = Db.find(userAll,conversation.get(i).get("id"),conversation.get(i).get("sender"));
+                all.addAll(dialogue);
+            }
+        }
         Map map = new TreeMap();
         map.put("system",official.get("ct"));
         map.put("like",like02.get("ct"));
-        map.put("leave",news02.get("ct"));
+        map.put("news",all.size());
         renderJson(map);
     }
 
@@ -235,17 +253,6 @@ public class ModelNameCardControllor extends Controller {
         }
     }
 
-    public void UpdateEnough(){
-        try {
-            Integer vid = getParaToInt("vid");
-            Integer enough = Integer.valueOf(getPara("enough"));
-            String UpdateEnough = Db.getSql("annunciate.UpdateEnough");
-            Db.update(UpdateEnough,enough,vid);
-            renderJson("{\"result\":\"success\"}");
-        }catch (Exception e){
-            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
-        }
-    }
 
     /**
      * 删除自己通告信息
@@ -270,58 +277,50 @@ public class ModelNameCardControllor extends Controller {
     /**
      * 系统信息
      */
-    public void Reports(){
-        String openid = getSessionAttr("openid");
-        String officialsSql = Db.getSql("official.SelectAll");
-        List<Record> officials = Db.find(officialsSql,openid);
-        renderJson(officials);
-
-    }
 
     public void WReports() throws UnsupportedEncodingException {
-        Integer id = getParaToInt("id");
-        String openid = getSessionAttr("openid");
-        List<Record> records = new ArrayList<Record>();
-        switch (id){
-            case 1 :
+        try {
+            Integer id = getParaToInt("id");
+            String openid = getSessionAttr("openid");
+            List<Record> records = new ArrayList<Record>();
+            switch (id){
+                case 1 :
                     String all = Db.getSql("official.SelectAll");
                     records = Db.find(all,openid);
-                break;
-            case 2 :
+                    break;
+                case 2 :
                     String SelectEM = Db.getSql("enjoy.SelectEM");
                     records = Db.find(SelectEM,1,openid);
                     for (int i = 0;i < records.size();i++){
                         records.get(i).set("name", EmojiUtil.emojiRecovery2((String) records.get(i).get("name")));
                     }
-                break;
-            case 3:
-                    String SelectEM02 = Db.getSql("enjoy.SelectEM");
-                    records = Db.find(SelectEM02,2,openid);
-                    for (int i = 0;i < records.size();i++){
-                        records.get(i).set("name", EmojiUtil.emojiRecovery2((String) records.get(i).get("name")));
-                     }
-                break;
-        }
-        renderJson(records);
-    }
-
-    /**
-     * 系统详情
-     */
-    public void Details(){
-        logger.info("系统详情");
-        try {
-            Integer id = getParaToInt("id");
-            Record  record = Db.findById("official",id);
-            String Updatelook = Db.getSql("official.Updatelook");
-            Db.update(Updatelook,id);
-            renderJson(record);
+                    break;
+                case 3:
+                    String senderAll = Db.getSql("conversation.senderAll");
+                    List<Record> conversation = Db.find(senderAll,openid);
+                    String recipientAll = Db.getSql("conversation.recipientAll");
+                    List<Record> conversations= Db.find(recipientAll,openid);
+                    if(conversation!=null){
+                        for (int i =0;i<conversation.size();i++){
+                            String unread = Db.getSql("dialogue.unread");
+                            Record dialogue = Db.findFirst(unread,conversation.get(i).get("recipient"),conversation.get(i).get("recipient"));
+                            records.add(dialogue);
+                        }
+                    }else if (conversations!=null){
+                        for (int i =0;i<conversations.size();i++){
+                            String unread = Db.getSql("dialogue.unread");
+                            Record dialogue = Db.findFirst(unread,conversation.get(i).get("sender"),conversation.get(i).get("sender"));
+                            records.add(dialogue);
+                        }
+                    }
+                    break;
+            }
+            renderJson(records);
         }catch (Exception e){
-            logger.error("错误",e.fillInStackTrace());
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
-
     }
+
 
     /**
      * 系统信息详情
@@ -331,23 +330,49 @@ public class ModelNameCardControllor extends Controller {
         try {
         Integer id = getParaToInt("id");
         Integer type = getParaToInt("type");
-        Record record = new Record();
-        switch (type){
-            case 1 :
-                record = Db.findById("official",id);
-                String Updatelook = Db.getSql("official.Updatelook");
-                Db.update(Updatelook,id);
-                break;
-            default :
-                String SelectGuestbook = Db.getSql("enjoy.SelectGuestbook");
-                record = Db.findFirst(SelectGuestbook,1,id);
-                record.set("name",EmojiUtil.emojiRecovery2((String) record.get("name")));
+        if (type==1){
+            Record record = Db.findById("official",id);
+            String Updatelook = Db.getSql("official.Updatelook");
+            Db.update(Updatelook,id);
+            renderJson(record);
+        }else if (type==2){
+            String SelectGuestbook = Db.getSql("enjoy.SelectGuestbook");
+            Record record = Db.findFirst(SelectGuestbook,1,id);
+            record.set("name",EmojiUtil.emojiRecovery2((String) record.get("name")));
+            renderJson(record);
+        }else if (type==3){
+            String dialogue = Db.getSql("dialogue.dialogue");
+            List<Record> recordList = Db.find(dialogue,id);
+            for (int i =0;i<recordList.size();i++){
+                if (recordList.get(i).get("View") == "未查看"){
+                    Record Dialogue = new Record().set("id",recordList.get(i).get("id")).set("View","已查看");
+                    Db.update("dialogue",Dialogue);
+                }
+            }
+            renderJson(recordList);
         }
-        renderJson(record);
         }catch (Exception e){
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
     }
+
+    /**
+     *留言回复
+     */
+    public void Reply(){
+        try {
+            Integer cid = getParaToInt("cid");
+            String openid = getSessionAttr("openid");
+            String content = getPara("content");
+            Record DialogueSave = new Record().set("cid",cid).set("user",openid).set("content",content)
+                    .set("SendTime",DateUtil.date());
+            Db.save("dialogue",DialogueSave);
+            renderJson("{\"result\":\"success\"}");
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
+    }
+
 
     public void DeleteReports(){
         String id = getPara("id");

@@ -1,3 +1,7 @@
+#namespace("user")
+  #include("user.sql")
+#end
+
 #namespace("banner")
   #include("banner.sql")
 #end
@@ -34,6 +38,10 @@
   #include("Reports.sql")
 #end
 
+#namespace("wReports")
+  #include("wReports.sql")
+#end
+
 #namespace("overall")
   #include("overall.sql")
 #end
@@ -54,6 +62,10 @@
   #include("workType.sql")
 #end
 
+#namespace("workpicture")
+  #include("workpicture.sql")
+#end
+
 #namespace("mooke")
   #include("mooke.sql")
 #end
@@ -64,5 +76,13 @@
 
 #namespace("enjoy")
   #include("enjoy.sql")
+#end
+
+#namespace("conversation")
+  #include("conversation.sql")
+#end
+
+#namespace("dialogue")
+  #include("dialogue.sql")
 #end
 

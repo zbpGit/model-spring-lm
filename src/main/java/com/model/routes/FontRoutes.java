@@ -9,7 +9,8 @@ import com.model.controller.*;
 public class FontRoutes extends Routes {
 
     public void config() {
-            add("/Annunciate",AnnunciateControllor.class);
+        add("/",YourController.class);
+        add("/Annunciate",AnnunciateControllor.class);
         add("/asynchronous",AsynchronousControllor.class);
         add("/payment", AuthorizationController.class);
         add("/Detail", DetailControllor.class);

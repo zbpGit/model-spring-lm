@@ -15,6 +15,7 @@ import com.model.util.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.TreeMap;
 
 /**
@@ -51,6 +52,7 @@ public class AnnunciateControllor extends Controller {
      * 收藏通告
      */
     public void Collect() {
+        try {
         Integer vid = getParaToInt("vid");
         String uid = getPara("uid");
         String openId = getSessionAttr("openid");
@@ -58,7 +60,6 @@ public class AnnunciateControllor extends Controller {
             String all = Db.getSql("model_an.pdsc");
             Record record = Db.findFirst(all, openId, vid);
             System.out.println(record);
-            try {
                 if (record == null) {
                     Record model_an = new Record();
                     model_an.set("mid", openId).set("aid", vid);
@@ -70,11 +71,11 @@ public class AnnunciateControllor extends Controller {
                     Db.delete("model_an", model_an);
                     renderJson("{\"result\":\"未收藏\"}");
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
-            }
         } else {
             renderJson("{\"result\":\"请勿收藏自己的通告\"}");
+        }
+        } catch (Exception e) {
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
     }
 
@@ -82,6 +83,7 @@ public class AnnunciateControllor extends Controller {
      * 通告首页
      */
     public void annunciate() {
+        try {
         Integer page = getParaToInt("page");//起始页数
         String address = getPara("address");//地区
         String type = getPara("type");//类型
@@ -109,16 +111,19 @@ public class AnnunciateControllor extends Controller {
             map.put("page",recordPage);
             renderJson(map);
         }
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
     }
 
     /**
      * 判断是不是官方
      */
     public void judge() {
-        String openId = getSessionAttr("openid");
-        Integer vid = getParaToInt("vid");
-        String official = getPara("official");
         try {
+            String openId = getSessionAttr("openid");
+            Integer vid = getParaToInt("vid");
+            String official = getPara("official");
             if (official.equals("官方")) {
                 String SelectOfficial = Db.getSql("Stick.SelectOfficial");
                 Record stick = Db.findFirst(SelectOfficial, openId, vid);
@@ -141,12 +146,14 @@ public class AnnunciateControllor extends Controller {
      * 通告详情表
      */
     public void Particulars() {
-        Integer vid = getParaToInt("vid");
-        String openId = getSessionAttr("openid");
-        Map map = new TreeMap();
         try {
+            Integer vid = getParaToInt("vid");
+            String openId = getSessionAttr("openid");
+            Map map = new TreeMap();
             String UpdateHit = Db.getSql("annunciate.UpdateHit");
-            Db.update(UpdateHit,vid);
+            Random random = new Random();
+            int s = random.nextInt(10)%(10-1+1) + 1;
+            Db.update(UpdateHit,s,vid);
             String SelectAM = Db.getSql("annunciate.SelectAM");
             Record SelectAM02 = Db.findFirst(SelectAM,vid);
             SelectAM02.set("name",EmojiUtil.emojiRecovery2(String.valueOf(SelectAM02.get("name"))));
@@ -183,6 +190,7 @@ public class AnnunciateControllor extends Controller {
      *
      */
     public void AddParticulars(){
+        try {
         Record reception = new Record();
         reception.set("worktype",getPara("worktype")).set("deadtime",getPara("deadtime"))
                 .set("worktheme",getPara("worktheme")).set("starttime",getPara("starttime"))
@@ -190,15 +198,13 @@ public class AnnunciateControllor extends Controller {
                 .set("detailaddr",getPara("detailaddr")).set("inputcount",getPara("inputcount"))
                 .set("ifinterview",getPara("ifinterview")).set("gender",getPara("gender"))
                 .set("price",getPara("price")).set("inputspecify",getPara("inputspecify"))
-                .set("addrmark",getPara("addrmark")).set("contactinfo",getPara("contactinfo"));
+                .set("contactinfo",getPara("contactinfo"));
         String serverId = getPara("serverId");
         String path = getRequest().getServletContext().getRealPath("Files/User");
         String openId = getSessionAttr("openid");
         Record annunciate = JsonMessageUtil.annunciatemessage(reception, openId);
-        try {
             if(serverId.equals("")) {
-                System.out.println(annunciate);
-                Db.save("annunciate",annunciate);
+                Db.save("annunciate","vid",annunciate);
             } else if(!serverId.equals("")) {
                 Db.save("annunciate",annunciate);
                 String role = Db.getSql("overall.access_token");
@@ -208,7 +214,7 @@ public class AnnunciateControllor extends Controller {
                     String file = DloadImgUtil.downloadMedia((String) overa.get("price"), chrstr[j], path, "/model-spring-lm/Files/User/");
                     Record view = new Record();
                     view.set("v_id",annunciate.get("Vid")).set("p_url",file);
-                    Db.save("view",view);
+                    Db.save("view","id",view);
                 }
             }
             renderJson("{\"result\":\"success\"}");
@@ -216,7 +222,6 @@ public class AnnunciateControllor extends Controller {
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
     }
-
     /**
      * 添加联系信息
      */
@@ -224,7 +229,8 @@ public class AnnunciateControllor extends Controller {
         try {
             String id = getSessionAttr("id");
             Record model = Db.findById("model",id);
-            if(model != null && model.get("wx_id") != null && model.get("phone") != null) {
+            System.out.println(model);
+            if(model != null && !model.get("wx_id").equals("") && !model.get("phone").equals("")) {
                 renderJson("{\"result\":\"存在联系方式\"}");
             } else {
                 renderJson("{\"result\":\"不存在联系方式\"}");
@@ -278,13 +284,14 @@ public class AnnunciateControllor extends Controller {
                     Record report = new Record();
                     report.set("vid",vid).set("Message",Message).set("nickname",openId).set("uid",uid)
                             .set("time",time);
-                    Db.save("reports",report);
+                    Db.save("Reports",report);
                     if(!serverId.equals("")) {
                         String[] chrstr = serverId.split(",");
                         for(int j = 0; j < chrstr.length; ++j) {
                             String file = DloadImgUtil.downloadMedia((String) overa.get("price"), chrstr[j].toString(), path, "/model-spring-lm/Files/User/");
                             Record record = new Record();
                             record.set("reid",report.get("id")).set("url",file);
+                            Db.save("Re_view","id",record);
                         }
                     }
                     renderJson("{\"result\":\"举报成功\"}");
@@ -296,6 +303,7 @@ public class AnnunciateControllor extends Controller {
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
     }
+
 
     /**
      * 类型

@@ -8,6 +8,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class AuthUtil {
 
@@ -23,5 +25,18 @@ public class AuthUtil {
         }
         httpGet.releaseConnection();
         return jsonObject;
+    }
+
+    /**
+     * 给微信返回参数
+     * @param return_code
+     * @param return_msg
+     * @return
+     */
+    public static String setXml(String return_code, String return_msg) {
+        SortedMap<String, String> parameters = new TreeMap();
+        parameters.put("return_code", return_code);
+        parameters.put("return_msg", return_msg);
+        return "<xml><return_code><![CDATA[" + return_code + "]]>" + "</return_code><return_msg><![CDATA[" + return_msg + "]]></return_msg></xml>";
     }
 }

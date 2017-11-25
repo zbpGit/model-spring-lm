@@ -9,3 +9,7 @@
 #sql("Updatelook")
   UPDATE official set  look = '1' where id = ?
 #end
+
+#sql("UpdateOficial")
+  update official set message = ? WHERE out_trade_no =?
+#end

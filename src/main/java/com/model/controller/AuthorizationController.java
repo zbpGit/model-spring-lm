@@ -24,7 +24,6 @@ public class AuthorizationController extends Controller {
      * @throws UnsupportedEncodingException
      */
     public void wxLogin() throws UnsupportedEncodingException {
-        String Url = getPara("url");
         String url = AuthorizationUtil.wxLogin();
         redirect(url);
     }
@@ -125,10 +124,8 @@ public class AuthorizationController extends Controller {
      * 名片支付
      */
     public void Work() {
-        /*Integer id = Integer.valueOf(getPara("id"));
-        Integer money = Integer.valueOf(getPara("money"));*/
-        Integer id = 144;
-        Integer money = 10;
+        Integer id = Integer.valueOf(getPara("id"));
+        Integer money = Integer.valueOf(getPara("money"));
         String openId = getSessionAttr("openid");
         String out_trade_no = SignUtil.getRandomStringByLength();
         String sqlMoeny = Db.getSql("serve.moneyType");
@@ -170,7 +167,6 @@ public class AuthorizationController extends Controller {
             }
                 String pay = AuthorizationUtil.Pay(openId, money, out_trade_no, "http://www.qingmeng168.com/model-spring-lm/asynchronous/syntony");
                 redirect(pay);
-                renderText("123");
             } catch (Exception e) {
                 throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
             }

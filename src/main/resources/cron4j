@@ -1,0 +1,11 @@
+cron4j=announcement,work
+
+announcement.cron=* * * * *
+announcement.class=com.model.cron.AnnouncementTiming
+announcement.daemon=true
+announcement.enable=true
+
+work.cron=* * * * *
+work.class=com.model.cron.WorkTiming
+work.daemon=true
+work.enable=true

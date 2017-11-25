@@ -1,19 +1,19 @@
 #sql("SelectAll")
   select * from annunciate as a,annunciatetype as b
-   where a.work_type = b.antype AND audit = 1 AND remove = '0'
+   where a.work_type = b.antype AND a.audit = 1 AND a.remove = '0'
    #if(type??)
-    and work_type = #para(type)
+    and a.work_type = #para(type)
   #end
   #if(sort == "deadline")
-  order by deadline DESC
+  order by a.deadline DESC
   #end
   #if(sort == "number")
-  order by number DESC
+  order by a.number DESC
   #end
 #end
 
 #sql("UpdateHit")
-  UPDATE annunciate set hit= hit +1 WHERE vid = ?
+  UPDATE annunciate set hit= hit + ? WHERE vid = ?
 #end
 
 #sql("SelectAM")
@@ -21,18 +21,19 @@
 #end
 
 #sql("SelectPage")
-  select * from annunciate where official = #para(official) and top = #para(top)
+  select * from annunciate as a,annunciatetype as b
+   where a.work_type = b.antype and a.official = #para(official) and a.top = #para(top)
   #if(address??)
-    and site like #para(address)
+    and a.site like #para(address)
   #end
   #if(type??)
-    and work_type = #para(type)
+    and a.work_type = #para(type)
   #end
   #if(sort == "deadline")
-  order by deadline DESC
+  order by a.deadline DESC
   #end
   #if(sort == "number")
-  order by number DESC
+  order by a.number DESC
   #end
 #end
 
@@ -62,3 +63,12 @@
 #sql("UpdateRemove")
   UPDATE annunciate  SET  remove = '1',top = '0' WHERE vid = ?
 #end
+
+#sql("QuantityArea")
+  select count(*) as quantity from annunciate where audit = 1 AND remove = '0' and site = ?
+#end
+
+#sql("SelectLately")
+  select count(*) as quantity from annunciate where audit = 1 AND remove = '0' and top = "1" and site = ?
+#end
+

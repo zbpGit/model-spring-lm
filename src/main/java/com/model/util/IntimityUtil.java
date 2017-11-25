@@ -30,26 +30,20 @@ public class IntimityUtil {
 
     public static final String mooke = "/model-spring-lm/Files/mooke/";
 
-    //授权地址
-    public static final String baekUtl = "http://www.qingmeng168.com/model-spring-lm/payment/callBack";
-
     //支付异步处理
     public static final String pay = "http://www.qingmeng168.com/model-spring-lm/asynchronous/syntony";
 
     public static final String payTwe = "http://www.qingmeng168.com/model-spring-lm/asynchronous/workY";
 
-    //通告类型
-    public static final String officialType = "官方";
-    public static final String OfficialTypeOne = "非官方";
-
-    //置顶标识
-    public static final String top = "1";
-    public static final String below = "0";
 
     //mooke
-    public static final String five = "/home/java/apache-tomcat-8.0.43/webapps/model-spring-lm/Files/workMk/5.jpg";
-    public static final String seven = "/home/java/apache-tomcat-8.0.43/webapps/model-spring-lm/Files/workMk/7.jpg";
-    public static final String nine = "/home/java/apache-tomcat-8.0.43/webapps/model-spring-lm/Files/workMk/9.jpg";
-    public static final String eleven = "/home/java/apache-tomcat-8.0.43/webapps/model-spring-lm/Files/workMk/11.jpg";
+    public static final String five = "/home/java/apache-tomcat-8.0.43/webapps/model/Files/workMk/5.jpg";
+    public static final String seven = "/home/java/apache-tomcat-8.0.43/webapps/model/Files/workMk/7.jpg";
+    public static final String nine = "/home/java/apache-tomcat-8.0.43/webapps/model/Files/workMk/workMk/9.jpg";
+    public static final String eleven = "/home/java/apache-tomcat-8.0.43/webapps/model/Files/workMk/11.jpg";
+    /*public static final String five = "/home/java/apache-tomcat-9.0.0.M21/webapps/model/Files/workMk/5.jpg";
+    public static final String seven = "/home/java/apache-tomcat-9.0.0.M21/webapps/model/Files/workMk/7.jpg";
+    public static final String nine = "/home/java/apache-tomcat-9.0.0.M21/webapps/model/Files/workMk/workMk/9.jpg";
+    public static final String eleven = "/home/java/apache-tomcat-9.0.0.M21/webapps/model/Files/workMk/11.jpg";*/
 
 }

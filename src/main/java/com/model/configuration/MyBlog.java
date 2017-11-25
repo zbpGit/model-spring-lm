@@ -8,6 +8,7 @@ import com.jfinal.kit.PropKit;
 import com.jfinal.log.Log4jLogFactory;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.activerecord.SqlReporter;
+import com.jfinal.plugin.cron4j.Cron4jPlugin;
 import com.jfinal.plugin.druid.DruidPlugin;
 import com.jfinal.plugin.ehcache.EhCachePlugin;
 import com.jfinal.template.Engine;
@@ -53,6 +54,9 @@ public class MyBlog extends JFinalConfig{
         plugins.add(arp);
         /*缓存*/
         plugins.add(new EhCachePlugin());
+        /*使用任务调度函数*/
+        Cron4jPlugin jPlugin = new Cron4jPlugin(PropKit.use("cron4j"),"cron4j");
+        plugins.add(jPlugin);
     }
 
     @Override

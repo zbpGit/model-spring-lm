@@ -9,3 +9,7 @@
 #sql("SelectMo")
   select * from model_mo where mid = ? and moid = ?
 #end
+
+#sql("DeleteMoid")
+  delete from model_mo where mid = ? and moid = ?
+#end

@@ -7,8 +7,8 @@
 #end
 
 #sql("SelectWP")
-select b.picture,a.id,a.age,a.name,a.city,a.region,a.attention,a.examine,a.exist,a.workJob,a.stature,a.weight,a.surround from work as a,workpicture as b
-where a.id = b.wid and a.id = ? and b.type = 1  order by b.id LIMIT 1
+select b.picture,a.id,a.age,a.name,a.sex,a.city,a.region,a.attention,a.examine,a.exist,a.workJob,a.stature,a.weight,a.surround from work as a,workpicture as b
+where a.id = b.wid and a.id = ? and b.type = 1 and a.exist = 1 order by b.id LIMIT 1
 #end
 
 #sql("SelectMo")
@@ -31,7 +31,6 @@ order by examine DESC
 #if(rank == "times")
 order by times DESC
 #end
-
 #end
 
 #sql("workNickName")
@@ -40,4 +39,12 @@ order by times DESC
 
 #sql("Judge")
 select b.picture,a.id,a.age,a.name,a.region,a.attention,a.examine,a.exist from work as a,workpicture as b where a.id = b.wid and a.wid = ? and a.exist BETWEEN  0 and 1  and b.type = 1 order by b.id LIMIT 1
+#end
+
+#sql("workAttention")
+  update work set attention = attention+1 where id = ?
+#end
+
+#sql("UpdateHit")
+  UPDATE work set examine= examine + ? WHERE id = ?
 #end

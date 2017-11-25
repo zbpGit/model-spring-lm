@@ -25,6 +25,4 @@ public class DetailControllor extends Controller {
         renderJson(map);
     }
 
-
-
 }

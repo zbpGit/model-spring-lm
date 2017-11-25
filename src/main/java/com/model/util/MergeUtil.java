@@ -47,6 +47,7 @@ public class MergeUtil {
         }
     }
 
+
     public static int[] integers(Integer type, String i) {
         int[] j = new int[4];
         byte var4;
@@ -372,13 +373,17 @@ public class MergeUtil {
     public static String url(Integer type) {
         String utl = null;
         if(type.intValue() == 5) {
-            utl = "/home/java/apache-tomcat-8.0.43/webapps/model-spring-lm/Files/workMk/5.jpg";
+            //utl = "/home/java/apache-tomcat-8.0.43/webapps/model/Files/workMk/5.jpg";
+            utl = IntimityUtil.five;
         } else if(type.intValue() == 7) {
-            utl = "/home/java/apache-tomcat-8.0.43/webapps/model-spring-lm/Files/workMk/7.jpg";
+            //utl = "/home/java/apache-tomcat-8.0.43/webapps/model/Files/workMk/7.jpg";
+            utl = IntimityUtil.seven;
         } else if(type.intValue() == 9) {
-            utl = "/home/java/apache-tomcat-8.0.43/webapps/model-spring-lm/Files/workMk/9.jpg";
+            //utl = "/home/java/apache-tomcat-8.0.43/webapps/model/Files/workMk/9.jpg";
+            utl = IntimityUtil.nine;
         } else if(type.intValue() == 11) {
-            utl = "/home/java/apache-tomcat-8.0.43/webapps/model-spring-lm/Files/workMk/11.jpg";
+            //utl = "/home/java/apache-tomcat-8.0.43/webapps/model/Files/workMk/11.jpg";
+            utl = IntimityUtil.eleven;
         }
 
         return utl;
@@ -423,8 +428,7 @@ public class MergeUtil {
             }
         }
 
-        String[] price = new String[]{outFile, "/model-spring-lm/Files/mooke/" + random + ".jpg"};
-        System.out.println(price[1]);
+        String[] price = new String[]{outFile, "/model/Files/mooke/" + random + ".jpg"};
         return price;
     }
 
@@ -440,6 +444,8 @@ public class MergeUtil {
 
         price = fileTest.getPrice();
         watermark(type, price[0], name, height, weight, modelBust, modelWaist, modelHips, shoes);
+        System.out.println("0="+price[0]);
+        System.out.println("1="+price[1]);
         return price[1];
     }
 
@@ -542,9 +548,4 @@ public class MergeUtil {
         return result;
     }
 
-    @Test
-    public void wh() {
-        String url = "D:\\Files\\876837988442460384.png";
-        System.out.println(reduceImg(url, url, (Float)null));
-    }
 }

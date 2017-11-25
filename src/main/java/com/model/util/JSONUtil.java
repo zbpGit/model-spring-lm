@@ -2,7 +2,6 @@ package com.model.util;
 
 
 import net.sf.json.JSONArray;
-import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,7 @@ public class JSONUtil {
         JSONArray jsonArray = JSONArray.fromObject(jsonList);
         return jsonArray;
     }
+
     public static String distinguish(String sort) {
         if (sort.equals("")) {
             sort = null;

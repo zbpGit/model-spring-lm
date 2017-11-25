@@ -33,31 +33,6 @@ public class AuthorizationUtil {
         return url;
     }
 
-    /*public static JSONObject callBack(HttpSession session, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String url = null;
-        String infoUrl = null;
-        StringBuffer stringBuffer = new StringBuffer();
-        String code = req.getParameter("code");
-        stringBuffer.append("https://api.weixin.qq.com/sns/oauth2/access_token?");
-        stringBuffer.append("appid=wx56731a06a3e947e8");
-        stringBuffer.append("&secret=724f483876d791efdd680841e8c94c2f");
-        stringBuffer.append("&code=" + code);
-        stringBuffer.append("&grant_type=authorization_code");
-        url = stringBuffer.toString();
-        JSONObject jsonObject = AuthUtil.doGetJson(url);
-        String openid = jsonObject.getString("openid");
-        String token = jsonObject.getString("access_token");
-        session.setAttribute("openid", openid);
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("https://api.weixin.qq.com/sns/userinfo?");
-        buffer.append("access_token=" + token);
-        buffer.append("&openid=" + openid);
-        buffer.append("&lang=zh_CN");
-        infoUrl = buffer.toString();
-        JSONObject userInfo = AuthUtil.doGetJson(infoUrl);
-        return userInfo;
-    }*/
-
     /**
      * 授权回调取得的参数
      * @return

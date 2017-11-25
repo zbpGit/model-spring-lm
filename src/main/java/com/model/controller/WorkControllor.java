@@ -10,13 +10,8 @@ import com.jfinal.plugin.activerecord.SqlPara;
 import com.jfinal.plugin.activerecord.tx.Tx;
 import com.model.interceptors.ErrorInterceptor;
 import com.model.util.*;
-import com.sun.org.apache.regexp.internal.RE;
-import org.apache.commons.lang.text.StrTokenizer;
-
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
-import java.util.logging.StreamHandler;
 
 /**
  * Created by Administrator on 2017/10/31.
@@ -28,37 +23,41 @@ public class WorkControllor extends Controller {
      * 名片首页
      */
     public void workAll(){
-        Integer page = getParaToInt("page");//当前页数
-        String region = getPara("region");//地区
-        String workJob = getPara("workJob");//风格标签
-        String workType = getPara("workType");//工作标签
-        String rank = getPara("rank");//排序
-        Map<String,Object> map = new TreeMap<>();
-        if (page == 1){
-            List<Record> records = new ArrayList<>();
-            String SelectStick = Db.getSql("work.SelectStick");
-            List<Record> record = Db.find(SelectStick);
-            for (Record record1 :record){
-                String SelectWP = Db.getSql("work.SelectWP");
-                Record record2 = Db.findFirst(SelectWP,record1.get("id"));
-                records.add(record2);
+        try {
+            Integer page = getParaToInt("page");//当前页数
+            String region = getPara("region");//地区
+            String workJob = getPara("workJob");//风格标签
+            String workType = getPara("workType");//工作标签
+            String rank = getPara("rank");//排序
+            Map<String,Object> map = new TreeMap<>();
+            if (page == 1){
+                List<Record> records = new ArrayList<>();
+                String SelectStick = Db.getSql("work.SelectStick");
+                List<Record> record = Db.find(SelectStick);
+                for (Record record1 :record){
+                    String SelectWP = Db.getSql("work.SelectWP");
+                    Record record2 = Db.findFirst(SelectWP,record1.get("id"));
+                    records.add(record2);
+                }
+                map.put("workStick",records);
             }
-            map.put("workStick",records);
+            List<Record> works = new ArrayList<>();
+            Kv kv = Kv.by("region",JSONUtil.judge(region)).set("workJob",JSONUtil.judge(workJob)).set("workType",JSONUtil.judge(workType)).set("rank",rank);
+            SqlPara para = Db.getSqlPara("work.SelectMo",kv);
+            Page<Record> pages = Db.paginate(page,10,para);
+            Record pageO = new Record();
+            pageO.set("PageNumber",pages.getPageNumber()).set("TotalPage",pages.getTotalPage());
+            map.put("page",pageO);
+            for (Record record :pages.getList()){
+                String s = Db.getSql("work.SelectWP");
+                Record record1 = Db.findFirst(s,record.get("id"));
+                works.add(record1);
+            }
+            map.put("work",works);
+            renderJson(map);
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
-        List<Record> works = new ArrayList<>();
-        Kv kv = Kv.by("region",JSONUtil.judge(region)).set("workJob",JSONUtil.judge(workJob)).set("workType",JSONUtil.judge(workType)).set("rank",rank);
-        SqlPara para = Db.getSqlPara("work.SelectMo",kv);
-        Page<Record> pages = Db.paginate(page,10,para);
-        Record pageO = new Record();
-        pageO.set("PageNumber",pages.getPageNumber()).set("TotalPage",pages.getTotalPage());
-        map.put("page",pageO);
-        for (Record record :pages.getList()){
-            String s = Db.getSql("work.SelectWP");
-            Record record1 = Db.findFirst(s,record.get("id"));
-            works.add(record1);
-        }
-        map.put("work",works);
-        renderJson(map);
     }
 
     /**
@@ -66,39 +65,47 @@ public class WorkControllor extends Controller {
      * @throws UnsupportedEncodingException
      */
     public void WorkXX() throws UnsupportedEncodingException {
-        Map map = new TreeMap();
-        Integer id = getParaToInt("id");
-        Record work = Db.findById("work","id",id);
-        String user = Db.getSql("user.user");
-        Record model = Db.findFirst(user,work.get("wid"));
-        model.set("name",EmojiUtil.emojiRecovery2(String.valueOf(model.get("name"))));
-        String SelectP = Db.getSql("workpicture.SelectP");
-        List<Record> workpicture = Db.find(SelectP,id);
-        String SelectLike = Db.getSql("enjoy.SelectLike");
-        Record enjoy = Db.findFirst(SelectLike,work.get("wid"),getSessionAttr("openid"));
-        String SelectMo = Db.getSql("model_mo.SelectMo");
-        Record modelMo = Db.findFirst(SelectMo,getSessionAttr("openid"),id);
-        String SelectNick = Db.getSql("wReports.SelectNick");
-        Record wReports = Db.findFirst(SelectNick,getSessionAttr("openid"),id);
-        map.put("work", work);
-        map.put("model", model);
-        map.put("workpicture", workpicture);
-        if (modelMo==null){
-            map.put("modelMo","未收藏");
-        }else {
-            map.put("modelMo","以收藏");
+        try {
+            Map map = new TreeMap();
+            Integer id = getParaToInt("id");
+            String UpdateHit = Db.getSql("work.UpdateHit");
+            Random random = new Random();
+            int s = random.nextInt(10)%(10-1+1) + 1;
+            Db.update(UpdateHit,s,id);
+            Record work = Db.findById("work","id",id);
+            String user = Db.getSql("user.user");
+            Record model = Db.findFirst(user,work.get("wid"));
+            model.set("name",EmojiUtil.emojiRecovery2(String.valueOf(model.get("name"))));
+            String SelectP = Db.getSql("workpicture.SelectP");
+            List<Record> workpicture = Db.find(SelectP,id);
+            String SelectLike = Db.getSql("enjoy.SelectLike");
+            Record enjoy = Db.findFirst(SelectLike,work.get("id"),getSessionAttr("openid"));
+            String SelectMo = Db.getSql("model_mo.SelectMo");
+            Record modelMo = Db.findFirst(SelectMo,getSessionAttr("openid"),id);
+            String SelectNick = Db.getSql("wReports.SelectNick");
+            Record wReports = Db.findFirst(SelectNick,getSessionAttr("openid"),id);
+            map.put("work", work);
+            map.put("model", model);
+            map.put("workpicture", workpicture);
+            if (modelMo==null){
+                map.put("modelMo","未收藏");
+            }else {
+                map.put("modelMo","已收藏");
+            }
+            if (wReports == null){
+                map.put("Reports","未举报");
+            }else {
+                map.put("Reports","已收藏");
+            }
+            if (enjoy == null){
+                map.put("like","未点赞");
+            }else {
+                map.put("like","已点赞");
+            }
+            renderJson(map);
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
-        if (wReports == null){
-            map.put("Reports","未举报");
-        }else {
-            map.put("Reports","已收藏");
-        }
-        if (enjoy == null){
-            map.put("like","未点赞");
-        }else {
-            map.put("like","已点赞");
-        }
-        renderJson(map);
     }
 
 
@@ -106,29 +113,58 @@ public class WorkControllor extends Controller {
      * 自己名片
      */
     public void Wgrouping(){
-        String openid = getSessionAttr("openid");
-        String nickName = Db.getSql("work.workNickName");
-        List<Record> records = Db.find(nickName,openid);
-        List<Record> recordList = new ArrayList<>();
-        for (Record record : records){
-            String wp =Db.getSql("work.SelectWP");
-            Record recordss = Db.findFirst(wp,record.get("id"));
-            recordList.add(recordss);
+        try {
+            String openid = getSessionAttr("openid");
+            String nickName = Db.getSql("work.workNickName");
+            List<Record> records = Db.find(nickName,openid);
+            List<Record> recordList = new ArrayList<>();
+            for (Record record : records){
+                String wp =Db.getSql("work.SelectWP");
+                Record recordss = Db.findFirst(wp,record.get("id"));
+                recordList.add(recordss);
+            }
+            renderJson(recordList);
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
-        renderJson(recordList);
+    }
+
+    /**
+     * 名片删除
+     */
+    public void WDelete(){
+        try {
+            Integer id = getParaToInt("id");
+            String Identifying= Db.getSql("wStick.Identifying");
+            Record wStick = Db.findFirst(Identifying,id);
+            if (wStick != null){
+                String EndDusinessCard = Db.getSql("wStick.EndDusinessCard");
+                Db.update(EndDusinessCard,DateUtil.date(),"0",id);
+            }
+            Record work = new Record().set("id",id).set("exist",2);
+            Db.update("work","id",work);
+            renderJson("{\"result\":\"success\"}");
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
+
     }
 
     /**
      * 判断是否添加过名片
      */
     public void workJudge(){
-        String openid = getSessionAttr("openid");
-        String work = Db.getSql("work.Judge");
-        Record record = Db.findFirst(work,openid);
-        if (record != null){
-            renderJson(record);
-        }else {
-            renderJson("{\"result\":\"无名片\"}");
+        try {
+            String openid = getSessionAttr("openid");
+            String work = Db.getSql("work.Judge");
+            Record record = Db.findFirst(work,openid);
+            if (record != null){
+                renderJson(record);
+            }else {
+                renderJson("{\"result\":\"无名片\"}");
+            }
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
     }
 
@@ -136,41 +172,67 @@ public class WorkControllor extends Controller {
      * 我的收藏名片
      */
     public void WorkMo(){
-        String openid = getSessionAttr("openid");
-        String Selectmid = Db.getSql("work.Selectmid");
-        List<Record> records = Db.find(Selectmid,openid);
-        List<Record> recordList = new ArrayList<>();
-        for (Record record : records){
-            String wp =Db.getSql("work.SelectWP");
-            Record recordss = Db.findFirst(wp,record.get("id"));
-            recordList.add(recordss);
+        try {
+            String openid = getSessionAttr("openid");
+            String Selectmid = Db.getSql("model_mo.Selectmid");
+            List<Record> records = Db.find(Selectmid,openid);
+            List<Record> recordList = new ArrayList<>();
+            for (Record record : records){
+                String wp =Db.getSql("work.SelectWP");
+                Record recordss = Db.findFirst(wp,record.get("moid"));
+                recordList.add(recordss);
+            }
+            renderJson(recordList);
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
-        renderJson(recordList);
     }
-
     /**
      * 名片收藏
      */
     public void workCollect(){
-        Integer id = getParaToInt("id");
-        String wid = getPara("wid");
-        String openid = getSessionAttr("openid");
-        if (!openid.equals(wid)){
-            String SelectMo = Db.getSql("model_mo.SelectMo");
-            Record record = Db.findFirst(SelectMo,openid,id);
-            if (record == null){
-                Record mo = new Record().set("mid",openid).set("moid",id);
-                Db.save("model_mo",mo);
-                renderJson("{\"result\":\"收藏成功\"}");
+        try {
+            Integer id = getParaToInt("id");
+            String wid = getPara("wid");
+            String openid = getSessionAttr("openid");
+            if (!openid.equals(wid)){
+                String SelectMo = Db.getSql("model_mo.SelectMo");
+                Record record = Db.findFirst(SelectMo,openid,id);
+                if (record == null){
+                    Record mo = new Record().set("mid",openid).set("moid",id);
+                    Db.save("model_mo","mo_id",mo);
+                    renderJson("{\"result\":\"收藏成功\"}");
+                }else {
+                    String DMM = Db.getSql("model_mo.DMM");
+                    Db.update(DMM,openid,id);
+                    renderJson("{\"result\":\"取消收藏\"}");
+                }
             }else {
-                String DMM = Db.getSql("model_mo.DMM");
-                Db.update(DMM,openid,id);
-                renderJson("{\"result\":\"取消收藏\"}");
+                renderJson("{\"result\":\"不能收藏自己的名片\"}");
             }
-        }else {
-            renderJson("{\"result\":\"不能收藏自己的名片\"}");
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
     }
+
+    /**
+     * 删除收藏名片
+     */
+    public void MultipleChoiceDelete(){
+        try {
+            String id = getPara("id");
+            String openid = getSessionAttr("openid");
+            String mid[] = id.split(",");
+            String DeleteMoid = Db.getSql("model_mo.DeleteMoid");
+            for (String i : mid){
+                Db.update(DeleteMoid,openid,Integer.valueOf(i));
+            }
+            renderJson("{\"result\":\"success\"}");
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
+    }
+
 
     /**
      * 名片添加
@@ -182,7 +244,7 @@ public class WorkControllor extends Controller {
             String types = getPara("types");
             String headline = getPara("headline");
             String openid = getSessionAttr("openid");
-            Record work =new Record().set("wid",openid).set("name",getPara("name")).set("age",getPara("age")).set("region",getPara("region")).set("city", JSONUtil.Cutout(getPara("region")))
+            Record work =new Record().set("wid",openid).set("name",getPara("name")).set("sex",getPara("sex")).set("age",getPara("age")).set("region",getPara("region")).set("city", JSONUtil.Cutout(getPara("region")))
                     .set("stature",getPara("stature")).set("weight",getPara("weight")).set("surround",getPara("surround")).set("shoe",getPara("shoe")).set("workJob",getPara("workJob"))
                     .set("workType",getPara("workType")).set("work",getPara("work")).set("offer",getPara("offer")).set("describ",getPara("describ")).set("relation",getPara("phone"))
                     .set("QQ",getPara("QQ")).set("times", DateUtil.servicer());
@@ -219,6 +281,7 @@ public class WorkControllor extends Controller {
     public void WorkUpdate(){
         try {
             Integer id = getParaToInt("id");
+            String wid = getPara("wid");
             String headlineID = getPara("headlineID");
             String headline = getPara("headline");
             String workpictureid = getPara("workpictureid");
@@ -226,8 +289,10 @@ public class WorkControllor extends Controller {
             String openId = getSessionAttr("openid");
             String path = getRequest().getServletContext().getRealPath("Files/work");
             String types = getPara("types");
-
-            Record work = new Record().set("id",id).set("wid",openId).set("name",getPara("name")).set("age",getPara("age")).set("region",getPara("region")).set("city",JsonMessageUtil.Cutout(getPara("region"))).set("stature",getPara("stature"))
+            if (wid.equals(openId) || wid == null){
+                renderJson("{\"result\":\"没有权限修改被人的通告！\"}");
+            }
+            Record work = new Record().set("id",id).set("wid",openId).set("name",getPara("name")).set("sex",getPara("sex")).set("age",getPara("age")).set("region",getPara("region")).set("city",JsonMessageUtil.Cutout(getPara("region"))).set("stature",getPara("stature"))
                     .set("weight",getPara("weight")).set("surround",getPara("surround")).set("shoe",getPara("shoe")).set("workJob",getPara("workJob")).set("workType",getPara("workType")).set("work",getPara("work"))
                     .set("offer",getPara("offer")).set("describ",getPara("describ")).set("relation",getPara("phone")).set("QQ",getPara("QQ")).set("times",DateUtil.servicer());
             Db.update("work","id",work);
@@ -312,20 +377,12 @@ public class WorkControllor extends Controller {
                     }
                 }
             }
-
+            renderJson("{\"result\":\"success\"}");
         }catch (Exception e){
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
     }
 
-
-    /**
-     * 名片删除
-     */
-    public void WDelete(){
-        Integer id = getParaToInt("id");
-
-    }
 
     /**
      * 模卡保存
@@ -336,7 +393,7 @@ public class WorkControllor extends Controller {
             Integer id = getParaToInt("id");
             Integer type = getParaToInt("type");
             String picture = getPara("picture");
-            String Dase = picture.substring(22);
+            String Dase = picture.substring(23);
             String path = getRequest().getServletContext().getRealPath("Files/mooke");
 
             String SelectIndex = Db.getSql("mooke.SelectIndex");
@@ -371,9 +428,9 @@ public class WorkControllor extends Controller {
             String modelWaist = getPara("modelWaist");
             String modelHips = getPara("modelHips");
             String modelShoes = getPara("modelShoes");
-
+            System.out.println(type+modelName+modelHeight+modelWeight+modelBust+modelWaist+modelHips+modelShoes);
             String SelectMooke = Db.getSql("mooke.SelectMooke");
-            List<Record> mookes = Db.find(SelectMooke,openid,2);
+            List<Record> mookes = Db.find(SelectMooke,openid,type);
             String render = null;
             if(type.intValue() == 5) {
                 render = MergeUtil.ThreadMK(mookes, type, path, modelName, modelHeight, modelWeight, modelBust, modelWaist, modelHips, modelShoes);
@@ -399,12 +456,21 @@ public class WorkControllor extends Controller {
             Integer id = getParaToInt("id");
             String wid = getPara("wid");
             if (!wid.equals(openid)){
-                Record enjoy = new Record().set("wid",id).set("oneself",wid).set("nickname",openid).set("headline","点赞").set("message","xxxxxx")
-                        .set("type",1).set("timestamp",DateUtil.servicer());
-                Db.save("enjoy","id",enjoy);
-                renderJson("{\"result\":\"success\"}");
+                String SelectLike = Db.getSql("enjoy.SelectLike");
+                Record enjoys = Db.findFirst(SelectLike,id,openid);
+                System.out.println(enjoys);
+                if (enjoys != null){
+                    renderJson("{\"result\":\"不能重复点赞！\"}");
+                }else {
+                    Record enjoy = new Record().set("wid",id).set("oneself",wid).set("nickname",openid).set("headline","点赞").set("message","xxxxxx")
+                            .set("type",1).set("timestamp",DateUtil.servicer());
+                    Db.save("enjoy","id",enjoy);
+                    String workAttention = Db.getSql("work.workAttention");
+                    Db.update(workAttention,id);
+                    renderJson("{\"result\":\"success\"}");
+                }
             }else {
-                renderJson("{\"result\":\"不能给自己留言\"}");
+                renderJson("{\"result\":\"不能给自己点赞！\"}");
             }
         }catch (Exception e){
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
@@ -429,6 +495,43 @@ public class WorkControllor extends Controller {
             }else {
                 renderJson("{\"result\":\"不能给自己留言\"}");
             }
+        }catch (Exception e){
+            throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
+        }
+    }
+
+    /**
+     * 举报名片
+     */
+    public void ReportABusinessCard(){
+        try {
+            Integer id =getParaToInt("id");
+            String massage = getPara("massage");
+            String serviceId = getPara("serviceId");
+            String wid = getSessionAttr("wid");
+            String openid = getSessionAttr("openid");
+            if (wid.equals(openid)){
+                renderJson("{\"result\":\"不能举报自己！\"}");
+            }
+            String SelectNick = Db.getSql("wReports.SelectNick");
+            Record record = Db.findFirst(SelectNick,openid,id);
+            if (record !=null){
+                renderJson("{\"result\":\"不能重复举报！\"}");
+            }
+            Record wreports = new Record().set("vid",id).set("Message",massage).set("nickname",openid).set("uid",DateUtil.date());
+            Db.save("wreports","id",wreports);
+            if (serviceId != null){
+                String role = Db.getSql("overall.access_token");
+                Record overa = Db.findFirst(role,"access_token");
+                String path = getRequest().getServletContext().getRealPath("Files/work");
+                String[] chrstr = serviceId.split(",");
+                for (String i : chrstr){
+                    String file = DloadImgUtil.downloadMedia((String) overa.get("price"), i, path, "/model-spring-lm/Files/work/");
+                    Record wview = new Record().set("reid",Integer.valueOf((String) wreports.get("id"))).set("url",file);
+                    Db.save("wview","id",wview);
+                }
+            }
+            renderJson("{\"result\":\"success\"}");
         }catch (Exception e){
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
@@ -469,8 +572,6 @@ public class WorkControllor extends Controller {
      */
     public void Download() {
         String Paht = "/home/java/apache-tomcat-8.0.43/webapps" + getPara("path");
-
-
         try {
             File file = new File(Paht);
             String filename = file.getName();
@@ -487,6 +588,7 @@ public class WorkControllor extends Controller {
             toClient.write(buffer);
             toClient.flush();
             toClient.close();
+            renderNull();
         } catch (IOException e) {
             throw new RuntimeException(UnifyThrowEcxp.throwExcp(e));
         }
